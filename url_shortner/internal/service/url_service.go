@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 
 	"github.com/jackc/pgx/v5"
@@ -28,14 +29,35 @@ func (s *URLService) CreateURL(
 	originalURL string,
 ) (*model.URL, error) {
 
-	_, err := s.repository.GetURLByAlias(ctx, alias)
+	if alias == "" {
+		var err error
 
-	if err == nil {
-		return nil, ErrAliasAlreadyExists
-	}
+		for {
+			alias, err = generateAlias()
+			if err != nil {
+				return nil, err
+			}
 
-	if !errors.Is(err, pgx.ErrNoRows) {
-		return nil, err
+			_, err = s.repository.GetURLByAlias(ctx, alias)
+
+			if errors.Is(err, pgx.ErrNoRows) {
+				break
+			}
+
+			if err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		_, err := s.repository.GetURLByAlias(ctx, alias)
+
+		if err == nil {
+			return nil, ErrAliasAlreadyExists
+		}
+
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return nil, err
+		}
 	}
 
 	url := &model.URL{
@@ -43,10 +65,37 @@ func (s *URLService) CreateURL(
 		OriginalURL: originalURL,
 	}
 
-	err = s.repository.CreateURL(ctx, url)
+	err := s.repository.CreateURL(ctx, url)
 	if err != nil {
 		return nil, err
 	}
 
 	return url, nil
+}
+
+func generateAlias() (string, error) {
+	const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+	bytes := make([]byte, 6)
+
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", err
+	}
+
+	alias := make([]byte, 6)
+
+	for i := range bytes {
+		alias[i] = characters[int(bytes[i])%len(characters)]
+	}
+
+	return string(alias), nil
+}
+
+func (s *URLService) GetURLByAlias(
+	ctx context.Context,
+	alias string,
+) (*model.URL, error) {
+
+	return s.repository.GetURLByAlias(ctx, alias)
 }
