@@ -57,6 +57,15 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 
 	var validationErrors []string
 
+	if strings.TrimSpace(request.OriginalURL) == "" && strings.TrimSpace(request.Alias) == "" {
+		http.Error(
+			w,
+			"Please enter the URL and alias name you want",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
 	if request.Alias != "" {
 		if len(request.Alias) > 100 {
 			validationErrors = append(
@@ -76,7 +85,7 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	if request.OriginalURL == "" {
 		validationErrors = append(
 			validationErrors,
-			"Original URL is required",
+			"Please enter the URL",
 		)
 	} else {
 		parsedURL, err := url.ParseRequestURI(request.OriginalURL)
@@ -87,7 +96,7 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 
 			validationErrors = append(
 				validationErrors,
-				"Invalid URL! Please enter a valid HTTP or HTTPS URL",
+				"Please enter a valid HTTP or HTTPS URL",
 			)
 		}
 	}
