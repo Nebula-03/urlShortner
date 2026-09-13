@@ -216,10 +216,11 @@ form button {
 
     border-radius: 12px;
 
+    border: none;
+
     background: #425b88;
     color: #f2ebdf;
 }
-
 
 /* Customization prompt */
 
@@ -235,14 +236,13 @@ form button {
     font-size: 16px;
 }
 
-#customPrompt button {
+/* #customPrompt button {
     padding: 0;
 
     background: none;
 
     color: #da7d65;
 
-    border-radius: 0;
 
     text-decoration: underline;
 
@@ -261,8 +261,32 @@ form button {
     box-shadow: none;
 
     transform: none;
-}
+} */
 
+
+#customPrompt button {
+    padding: 0;
+
+    background: none;
+    border: none;
+
+    color: #20a3b4;
+
+    border-radius: 0;
+    text-decoration: underline;
+    font-size: 15px;
+
+    box-shadow: none;
+    transform: none;
+}
+#customPrompt button:hover {
+    background: none;
+
+    color: #0c4b53;
+
+    box-shadow: none;
+    transform: none;
+}
 
 /* Error */
 
@@ -278,7 +302,7 @@ form button {
 
     background: #ed3017; */
     color: rgb(253, 61, 61);
-    font-weight: 600;
+    font-weight: 900;
     font-size: 13px;
 
     overflow-wrap: anywhere;
@@ -299,7 +323,7 @@ form button {
 
     background: #178649; */
     color: rgb(57, 161, 33);
-    font-weight: 600;
+    font-weight: 800;
     font-size: 13px;
     padding-bottom: 20px;
 
@@ -332,10 +356,10 @@ form button {
 
     border-radius: 12px;
 
-    background: #3e3433;
-    color: #f2ebdf;
+    /* background: #0d7c2b; */
+    color: #0c5356;
 
-    font-size: 14px;
+    font-size: 15px;
 
     opacity: 0;
     visibility: hidden;
@@ -344,7 +368,7 @@ form button {
 
     transition:
         opacity 0.2s ease,
-        visibility 0.2s ease;
+        visibility 0.3s ease;
 }
 
 #copyToast.show {

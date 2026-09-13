@@ -127,7 +127,7 @@ shortenerForm.addEventListener('submit', async (e) => {
 
         showError(
             shortenerResult,
-            'Please enter a valid HTTP or HTTPS URL'
+            '⚠️ Please enter a valid HTTP or HTTPS URL'
         );
 
         return;
@@ -185,7 +185,7 @@ shortenerForm.addEventListener('submit', async (e) => {
         shortenerResult.innerHTML = `
 
             <div class="success-message">
-                URL shortened successfully 🎉
+                URL shortened successfully! 🎉
             </div>
 
             <div class="result-link-row">
@@ -422,7 +422,7 @@ customAliasForm.addEventListener('submit', async (e) => {
         customAliasResult.innerHTML = `
 
             <div class="success-message">
-                Custom alias created successfully
+                Custom alias created successfully! 🎉
             </div>
 
             <div class="result-link-row">
@@ -456,7 +456,7 @@ customAliasForm.addEventListener('submit', async (e) => {
 
         showError(
             customAliasResult,
-            'Unable to connect to the server.'
+            '⚠️ Unable to connect to the server.'
         );
 
     } finally {
@@ -507,7 +507,7 @@ function showError(element, message) {
     element.innerHTML = `
 
         <div class="error-message">
-            ${message || 'Something went wrong.'}
+            ${message || '⚠️ Something went wrong.'}
         </div>
 
     `;
@@ -543,7 +543,7 @@ document.addEventListener('click', async (e) => {
 
         showError(
             e.target.parentElement.parentElement,
-            'Unable to copy the URL.'
+            '⚠️ Unable to copy the URL.'
         );
 
     }

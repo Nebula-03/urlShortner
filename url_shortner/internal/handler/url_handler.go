@@ -42,32 +42,51 @@ func NewURLHandler(service *service.URLService) *URLHandler {
 }
 
 func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
+
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+
 		return
 	}
 
 	var request CreateURLRequest
 
 	err := json.NewDecoder(r.Body).Decode(&request)
+
 	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+
+		http.Error(
+			w,
+			"Invalid request body",
+			http.StatusBadRequest,
+		)
+
 		return
 	}
 
 	var validationErrors []string
 
-	if strings.TrimSpace(request.OriginalURL) == "" && strings.TrimSpace(request.Alias) == "" {
+	if strings.TrimSpace(request.OriginalURL) == "" &&
+		strings.TrimSpace(request.Alias) == "" {
+
 		http.Error(
 			w,
 			"Please enter the URL and alias name you want",
 			http.StatusBadRequest,
 		)
+
 		return
 	}
 
 	if request.Alias != "" {
+
 		if len(request.Alias) > 100 {
+
 			validationErrors = append(
 				validationErrors,
 				"Alias must be 100 characters or less",
@@ -75,6 +94,7 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if !aliasPattern.MatchString(request.Alias) {
+
 			validationErrors = append(
 				validationErrors,
 				"Invalid alias! Use only letters, numbers, hyphens, and underscores",
@@ -83,15 +103,19 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if request.OriginalURL == "" {
+
 		validationErrors = append(
 			validationErrors,
 			"Please enter the URL",
 		)
+
 	} else {
+
 		parsedURL, err := url.ParseRequestURI(request.OriginalURL)
 
 		if err != nil ||
-			(parsedURL.Scheme != "http" && parsedURL.Scheme != "https") ||
+			(parsedURL.Scheme != "http" &&
+				parsedURL.Scheme != "https") ||
 			parsedURL.Host == "" {
 
 			validationErrors = append(
@@ -102,11 +126,13 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(validationErrors) > 0 {
+
 		http.Error(
 			w,
 			strings.Join(validationErrors, "\n"),
 			http.StatusBadRequest,
 		)
+
 		return
 	}
 
@@ -117,14 +143,28 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
+
 		log.Println("Create URL error:", err)
 
+		if errors.Is(err, service.ErrURLUnreachable) {
+
+			http.Error(
+				w,
+				"Please enter a valid and reachable URL",
+				http.StatusBadRequest,
+			)
+
+			return
+		}
+
 		if errors.Is(err, service.ErrAliasAlreadyExists) {
+
 			http.Error(
 				w,
 				"This custom alias is already taken. Please choose a different alias.",
 				http.StatusConflict,
 			)
+
 			return
 		}
 
@@ -133,19 +173,26 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 			"Failed to create URL",
 			http.StatusInternalServerError,
 		)
+
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
 	w.WriteHeader(http.StatusCreated)
 
 	if request.Alias == "" {
+
 		response := BasicURLResponse{
 			Message:  "Your shortened URL is ready!",
 			ShortURL: "http://localhost:8080/" + url.Alias,
 		}
 
 		json.NewEncoder(w).Encode(response)
+
 		return
 	}
 
@@ -157,21 +204,46 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func (h *URLHandler) RedirectURL(w http.ResponseWriter, r *http.Request) {
+func (h *URLHandler) RedirectURL(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+
+		http.Error(
+			w,
+			"Method not allowed",
+			http.StatusMethodNotAllowed,
+		)
+
 		return
 	}
 
-	alias := strings.TrimPrefix(r.URL.Path, "/")
+	alias := strings.TrimPrefix(
+		r.URL.Path,
+		"/",
+	)
 
 	if alias == "" {
-		http.Error(w, "Alias is required", http.StatusBadRequest)
+
+		http.Error(
+			w,
+			"Alias is required",
+			http.StatusBadRequest,
+		)
+
 		return
 	}
 
 	if strings.Contains(alias, "/") {
-		http.Error(w, "Invalid alias", http.StatusBadRequest)
+
+		http.Error(
+			w,
+			"Invalid alias",
+			http.StatusBadRequest,
+		)
+
 		return
 	}
 
@@ -181,14 +253,17 @@ func (h *URLHandler) RedirectURL(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
+
 		log.Println("Get URL error:", err)
 
 		if errors.Is(err, pgx.ErrNoRows) {
+
 			http.Error(
 				w,
 				"URL not found",
 				http.StatusNotFound,
 			)
+
 			return
 		}
 
@@ -197,6 +272,7 @@ func (h *URLHandler) RedirectURL(w http.ResponseWriter, r *http.Request) {
 			"Failed to retrieve URL",
 			http.StatusInternalServerError,
 		)
+
 		return
 	}
 
