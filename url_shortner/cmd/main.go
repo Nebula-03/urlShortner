@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"url_shortner/internal/config"
@@ -11,12 +10,31 @@ import (
 	"url_shortner/internal/service"
 )
 
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
-	fmt.Println("URL Shortner starting...")
+
+	fmt.Println("URL Shortener starting...")
 
 	db, err := config.ConnectDatabase()
+
 	if err != nil {
-		log.Fatal("Database connection failed:", err)
+		fmt.Println("Database connection failed:", err)
+		return
 	}
 
 	defer db.Close()
@@ -24,18 +42,22 @@ func main() {
 	fmt.Println("Database connected successfully!")
 
 	urlRepository := repository.NewURLRepository(db)
-
 	urlService := service.NewURLService(urlRepository)
-
 	urlHandler := handler.NewURLHandler(urlService)
 
-	http.HandleFunc("/shorten", urlHandler.CreateURL)
-	http.HandleFunc("/", urlHandler.RedirectURL)
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/shorten", urlHandler.CreateURL)
+	mux.HandleFunc("/", urlHandler.RedirectURL)
 
 	fmt.Println("Server running on http://localhost:8080")
 
-	err = http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(
+		":8080",
+		enableCORS(mux),
+	)
+
 	if err != nil {
-		log.Fatal("Server failed:", err)
+		fmt.Println("Server error:", err)
 	}
 }

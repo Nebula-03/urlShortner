@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>smolURL</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main>
+
+        <img
+            src="img/smolurlLogo.png"
+            alt="smolURL"
+            class="logo"
+        >
+
+        <div class="feature-buttons">
+
+            <button id="shortenerBtn" type="button">
+                URL Shortener
+            </button>
+
+            <button id="customAliasBtn" type="button">
+                Create Custom Alias
+            </button>
+
+        </div>
+
+
+        <!-- URL Shortener -->
+
+        <section id="shortenerSection">
+
+            <h2>Shorten your URL</h2>
+
+            <form id="shortenerForm">
+
+                <input
+                    type="text"
+                    id="originalUrl"
+                    placeholder="Enter your URL"
+                >
+
+                <button id="shortenButton" type="submit">
+                    Shorten URL
+                </button>
+
+            </form>
+
+            <div
+                id="shortenerResult"
+                aria-live="polite"
+            ></div>
+
+
+            <div id="customPrompt">
+
+                <p>Want to customize a little?</p>
+
+                <button
+                    id="pickAliasBtn"
+                    type="button"
+                >
+                    Pick your own alias
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- Custom Alias -->
+
+        <section id="customAliasSection">
+
+            <h2>Create your custom alias</h2>
+
+            <form id="customAliasForm">
+
+                <input
+                    type="text"
+                    id="customOriginalUrl"
+                    placeholder="Enter your URL"
+                >
+
+                <input
+                    type="text"
+                    id="alias"
+                    placeholder="Enter your alias"
+                    maxlength="100"
+                >
+
+                <button
+                    id="customAliasButton"
+                    type="submit"
+                >
+                    Create Short URL
+                </button>
+
+            </form>
+
+            <div
+                id="customAliasResult"
+                aria-live="polite"
+            ></div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Copy notification -->
+
+    <div
+        id="copyToast"
+        role="status"
+        aria-live="polite"
+    >
+        Copied
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
