@@ -12,7 +12,7 @@ import (
 func ConnectDatabase() (*pgxpool.Pool, error) {
 
 	err := godotenv.Load()
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		return nil, fmt.Errorf("Error loading .env file: %w", err)
 	}
 
