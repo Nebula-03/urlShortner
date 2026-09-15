@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 
@@ -57,7 +58,6 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	var request CreateURLRequest
 
 	err := json.NewDecoder(r.Body).Decode(&request)
-
 	if err != nil {
 
 		http.Error(
@@ -86,7 +86,6 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	if request.Alias != "" {
 
 		if len(request.Alias) > 100 {
-
 			validationErrors = append(
 				validationErrors,
 				"Alias must be 100 characters or less",
@@ -112,7 +111,6 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	} else {
 
 		parsedURL, err := url.ParseRequestURI(request.OriginalURL)
-
 		if err != nil ||
 			(parsedURL.Scheme != "http" &&
 				parsedURL.Scheme != "https") ||
@@ -143,7 +141,6 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-
 		log.Println("Create URL error:", err)
 
 		if errors.Is(err, service.ErrURLUnreachable) {
@@ -186,9 +183,15 @@ func (h *URLHandler) CreateURL(w http.ResponseWriter, r *http.Request) {
 
 	if request.Alias == "" {
 
+		baseURL := os.Getenv("BASE_URL")
+
+		if baseURL == "" {
+			baseURL = "http://localhost:8080"
+		}
+
 		response := BasicURLResponse{
 			Message:  "Your shortened URL is ready!",
-			ShortURL: "http://localhost:8080/" + url.Alias,
+			ShortURL: strings.TrimRight(baseURL, "/") + "/" + url.Alias,
 		}
 
 		json.NewEncoder(w).Encode(response)
