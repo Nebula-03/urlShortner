@@ -67,27 +67,57 @@ func (r *URLRepository) GetURLByAlias(ctx context.Context, alias string) (*model
 	)
 
 	// Temporary diagnostic check:
-	// Show the aliases visible to the running application.
+	// Check whether the alias stored in PostgreSQL exactly matches
+	// the alias received from the request.
 	rows, err := r.db.Query(
 		ctx,
-		"SELECT alias FROM urls ORDER BY id",
+		`
+		SELECT
+			alias,
+			alias = $1 AS exact_match,
+			length(alias) AS alias_length,
+			length($1) AS input_length,
+			encode(convert_to(alias, 'UTF8'), 'hex') AS alias_hex,
+			encode(convert_to($1, 'UTF8'), 'hex') AS input_hex
+		FROM urls
+		`,
+		alias,
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("diagnostic alias query failed: %w", err)
+		return nil, fmt.Errorf("diagnostic alias comparison failed: %w", err)
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var existingAlias string
+		var (
+			existingAlias string
+			exactMatch    bool
+			aliasLength   int
+			inputLength   int
+			aliasHex      string
+			inputHex      string
+		)
 
-		if err := rows.Scan(&existingAlias); err != nil {
-			return nil, fmt.Errorf("diagnostic alias scan failed: %w", err)
+		if err := rows.Scan(
+			&existingAlias,
+			&exactMatch,
+			&aliasLength,
+			&inputLength,
+			&aliasHex,
+			&inputHex,
+		); err != nil {
+			return nil, fmt.Errorf("diagnostic alias comparison scan failed: %w", err)
 		}
 
 		fmt.Printf(
-			"DIAGNOSTIC: database alias=%q\n",
+			"DIAGNOSTIC: database alias=%q exact_match=%t alias_length=%d input_length=%d alias_hex=%s input_hex=%s\n",
 			existingAlias,
+			exactMatch,
+			aliasLength,
+			inputLength,
+			aliasHex,
+			inputHex,
 		)
 	}
 
